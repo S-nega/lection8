@@ -7,6 +7,7 @@ const Book = require('..//models/bookModel');
 //   res.render('index', { title: 'Express' });
 // });
 
+//get page of adding new book
 router.get('/add/', async(req, res) => {
     try{
         res.status(200).render(`addbook`);
@@ -83,11 +84,11 @@ router.post('/del/:id', async(req, res) => {
             return res.status(404).json({message: `cannot find any Book with ID ${id}`})
         }
         // res.status(200).json(book);
-        console.log(book);
+        // console.log(book);
         res.status(200).redirect('/books');
 
     } catch (error){
-        console.log(error)
+        // console.log(error)
         res.status(500).json({message: error.message});
     }
   })

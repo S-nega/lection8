@@ -1,0 +1,25 @@
+extends layout
+
+block content
+    p Hello #{currentuser.name} !
+    form(action="#{currentuser.id}", method="post") 
+        p name: 
+        <input type="text" name = "name" value = #{currentuser.name}>
+        br
+        p email: 
+        <input type="text" name = "email" value = #{currentuser.email}>
+        br
+        p Enter your old password: 
+        <input type="password" name = "password">
+        br
+        p Enter your new password: 
+        <input type="password" name = "newpas">
+        br
+        p Repeat your new password: 
+        <input type="password" name = "repnewpas">
+        br
+        br
+        button(type="submit" value="save") Save  
+        
+    form(action="/users/del/#{currentuser.id}", method="post")
+        button(type="submit" value="delete") Delete

@@ -1,13 +1,8 @@
 extends layout
 
 block content
-    form(action="#{user.id}", method="post") 
-        p name: 
-        <input type="text" name = "name" value = #{user.name}>
-        br
-        p email: 
-        <input type="text" name = "email" value = #{user.email}>
-        br
-        br
-        button(type="submit" value="save") Save  
-        
+    p #{user.name}
+    br
+    p #{user.email}
+    br
+    br

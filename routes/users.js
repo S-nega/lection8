@@ -3,10 +3,56 @@ const router = express.Router();
 const User = require('..//models/userModel');
 const { body, validationResult } = require('express-validator');
 
-/* GET home page. */
-// router.get('/', function(req, res, next) {
-//   res.render('index', { title: 'Express' });
-// });
+let currentuser = null;
+
+//get registration page
+router.get('/reg', async(req, res) => {
+  try{
+      res.status(200).render(`reg`);
+  } catch (error){
+      res.status(500).json({message: error.message});
+  }
+})
+
+//get authentification page and logout
+router.get('/auth', async(req, res) => {
+  try{
+      currentuser = null;
+      res.status(200).render(`auth`);
+  } catch (error){
+      res.status(500).json({message: error.message});
+  }
+})
+
+//check auth user
+router.post('/auth', async(req, res) => {
+  try{
+      const email = req.body.email;
+      const users = await User.find({});
+      console.log(email);
+
+      users.forEach(user => {
+        // for(let i=0);
+        if(user.email === email){
+          // curus = user;
+          currentuser = user;
+          // return user;
+        }
+      });
+
+      const curid = currentuser.id;
+      if(currentuser.password === req.body.password){
+        // res.status(200).render(`users`, {currentuser: curus});
+        res.status(200).redirect('/users/' + curid);// get one user
+      }
+      else{
+        res.status(500).json({message: "uncorrect password or email"});
+      }
+  } catch (error){
+      res.status(500).json({message: error.message});
+  }
+})
+
 
 //get all users
 router.get('/', async(req, res) => {
@@ -14,7 +60,7 @@ router.get('/', async(req, res) => {
         const users = await User.find({});
         // res.status(200).json(users);
         console.log(users);
-        res.status(200).render(`users`, {users: users});
+        res.status(200).render(`users`, {users: users, currentuser: currentuser});
 
     } catch (error){
         res.status(500).json({message: error.message})
@@ -27,26 +73,49 @@ router.get('/:id', async(req, res) => {
         const {id} = req.params;
         const user = await User.findById(id);
         // res.status(200).json(user);
-        console.log(user);
-        res.status(200).render(`user`, {user: user});
+        // console.log(user.id);
+        console.log(currentuser);
+        if (currentuser != null){
+          if (user.id === currentuser.id){
+            res.status(200).render(`edituser`, {currentuser: user});
+          }
+          else{
+            console.log("you are not registered")
+            res.status(200).render(`user`, {user: user});
+          }
+        }
+        else{
+          console.log("you are not registered")
+          res.status(200).render(`user`, {user: user});
+        }
+        
+        
 
     } catch (error) {
         res.status(500).json({message: error.message})
     }
   })
   
-  //create new user
+  //create new user registration
 router.post('/', async(req, res) => {
     try{
-      if(req.body.password.size >= 6 && 
+      if(
+        req.body.reppas === req.body.password && 
         req.body.email.indexOf('@') < req.body.email.lastIndexOf('.')-1){
+          
+        const users = await User.find({});
+        users.forEach(user => {
+          if(req.body.email === user.email){
+            res.status(500).json({message: "this email is already used"});
+          }  
+        });
+          
         const user = await User.create(req.body);
-        res.status(200).json(user);
-        console.log(user);
+        currentuser = user;
+        res.status(200).redirect('/users/' + user.id);// get one user
         
       } else{
-        console.log(JSON.stringify(req.body.password).size);
-        res.send("uncorrect email or password");
+        res.send("unallowable email or password");
       }
     } catch (error){
       console.log(error)
@@ -74,7 +143,7 @@ router.post('/:id', async(req, res) => {
   })
   
   //delete user
-router.delete('/:id', async(req, res) => {
+router.post('/del/:id', async(req, res) => {
     try{
         const {id} = req.params;
         const user = await User.findByIdAndDelete(id);
@@ -82,8 +151,11 @@ router.delete('/:id', async(req, res) => {
         if(!user){
             return res.status(404).json({message: `cannot find any user with ID ${id}`})
         }
-        res.status(200).json(user);
-        console.log(user);
+        // res.status(200).json(user);
+        // console.log(user);
+        currentuser = null;
+        res.status(200).redirect('/users/reg');
+
     } catch (error){
         console.log(error)
         res.status(500).json({message: error.message})
