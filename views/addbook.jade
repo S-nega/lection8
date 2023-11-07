@@ -1,0 +1,16 @@
+extends layout
+
+block content
+    form(action="/books/", method="post") 
+        p book name: 
+        <input type="text" name = "name">
+        br
+        p book author: 
+        <input type="text" name = "author">
+        br
+        p book year: 
+        <input type="text" name = "year">
+        br
+        br
+        button(type="submit" value="save") Add book
+        

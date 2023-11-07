@@ -1,0 +1,22 @@
+extends layout
+
+block content
+    form(action="#{book.id}", method="post") 
+        p book name: 
+        <input type="text" name = "name" value = #{book.name}>
+        br
+        p book author: 
+        <input type="text" name = "author" value = #{book.author}>
+        br
+        p book year: 
+        <input type="text" name = "year" value = #{book.year}>
+        br
+        br
+        button(type="submit" value="save") Save  
+
+    //- input(type="delete" method="delete")
+
+    //- p name: <a href=/books/#{book.id}> !{book.name} </a>
+
+    form(action="/books/del/#{book.id}", method="post")
+        button(type="submit" value="delete") Delete

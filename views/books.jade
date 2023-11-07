@@ -1,0 +1,8 @@
+extends layout
+
+block content
+    p <a href=/books/add> Add book </a>
+    p books:
+    each book in books
+        p name: <a href=/books/#{book.id}> !{book.name} </a>
+        

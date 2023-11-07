@@ -1,0 +1,7 @@
+extends layout
+
+block content
+    p users:
+    each user in users
+        p name: <a href=/users/#{user.id}> !{user.name} </a>
+        
