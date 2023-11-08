@@ -1,6 +1,9 @@
 extends layout
 
 block content
+
+    a(href="/users") back to lists
+
     p Hello #{currentuser.name} !
     form(action="#{currentuser.id}", method="post") 
         p name: 
@@ -10,16 +13,18 @@ block content
         <input type="text" name = "email" value = #{currentuser.email}>
         br
         p Enter your old password: 
-        <input type="password" name = "password">
+        <input type="password" name = "oldpas">
         br
         p Enter your new password: 
-        <input type="password" name = "newpas">
+        <input type="password" name = "password">
         br
         p Repeat your new password: 
-        <input type="password" name = "repnewpas">
+        <input type="password" name = "reppas">
         br
         br
         button(type="submit" value="save") Save  
+        br
+        br
         
     form(action="/users/del/#{currentuser.id}", method="post")
         button(type="submit" value="delete") Delete

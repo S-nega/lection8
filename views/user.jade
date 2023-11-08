@@ -1,8 +1,8 @@
 extends layout
 
 block content
-    p #{user.name}
-    br
-    p #{user.email}
-    br
-    br
+
+    a(href="/users") back to lists
+
+    p Name: #{user.name}
+    p Email: #{user.email}

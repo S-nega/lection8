@@ -7,10 +7,11 @@ const logger = require('morgan');
 const Book = require('./models/bookModel')
 const Author = require('./models/authorModel')
 
+let currentuser = null;
 
 // const indexRouter = require('./routes/index');
-const UsersRouter = require('./routes/users');
-const BooksRouter = require('./routes/books');
+const UsersRouter = require('./routes/users', {currentuser: currentuser});
+const BooksRouter = require('./routes/books', {currentuser: currentuser});
 const AuthorRouter = require('./routes/authors');
 
 const app = express();
@@ -72,6 +73,8 @@ app.get('/text/:text', async(req, res) => {
 app.use('/books', BooksRouter);
 app.use('/authors', AuthorRouter);
 app.use('/users', UsersRouter);
+
+app.set({currentuser: currentuser});
 
 //get one book
 

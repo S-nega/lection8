@@ -3,7 +3,6 @@ const router = express.Router();
 const User = require('..//models/userModel');
 const { body, validationResult } = require('express-validator');
 
-let currentuser = null;
 
 //get registration page
 router.get('/reg', async(req, res) => {
@@ -40,14 +39,23 @@ router.post('/auth', async(req, res) => {
         }
       });
 
-      const curid = currentuser.id;
-      if(currentuser.password === req.body.password){
-        // res.status(200).render(`users`, {currentuser: curus});
-        res.status(200).redirect('/users/' + curid);// get one user
+      try{
+        const curid = currentuser.id;
+        if(currentuser.password === req.body.password){
+          // res.status(200).render(`users`, {currentuser: curus});
+          res.status(200).redirect('/users/' + curid);// get one user
+        }
+        else{
+          // res.status(500).json({message: "uncorrect password"});
+          console.log("uncorrect password");
+          res.status(500).redirect('/users/auth');
+        }
+      }catch (error){
+        console.log("uncorrect email");
+        res.status(200).redirect('/users/auth');
       }
-      else{
-        res.status(500).json({message: "uncorrect password or email"});
-      }
+      
+      
   } catch (error){
       res.status(500).json({message: error.message});
   }
@@ -57,13 +65,17 @@ router.post('/auth', async(req, res) => {
 //get all users
 router.get('/', async(req, res) => {
     try{
-        const users = await User.find({});
-        // res.status(200).json(users);
-        console.log(users);
+      const users = await User.find({});
+      // res.status(200).json(users);
+      console.log(users);
+      try{
         res.status(200).render(`users`, {users: users, currentuser: currentuser});
+      }catch (error){
+        res.status(200).render(`users`, {users: users, currentuser: null});
+      }
 
     } catch (error){
-        res.status(500).json({message: error.message})
+      res.status(500).json({message: error.message})
     }
   });
 
@@ -74,7 +86,7 @@ router.get('/:id', async(req, res) => {
         const user = await User.findById(id);
         // res.status(200).json(user);
         // console.log(user.id);
-        console.log(currentuser);
+        // console.log(currentuser);
         if (currentuser != null){
           if (user.id === currentuser.id){
             res.status(200).render(`edituser`, {currentuser: user});
@@ -88,11 +100,11 @@ router.get('/:id', async(req, res) => {
           console.log("you are not registered")
           res.status(200).render(`user`, {user: user});
         }
-        
-        
 
     } catch (error) {
-        res.status(500).json({message: error.message})
+        console.log({message: error.message})
+        res.status(500).redirect('/users/auth');
+        // res.status(500).json({message: error.message})
     }
   })
   
@@ -101,12 +113,14 @@ router.post('/', async(req, res) => {
     try{
       if(
         req.body.reppas === req.body.password && 
-        req.body.email.indexOf('@') < req.body.email.lastIndexOf('.')-1){
+        req.body.email.indexOf('@') < req.body.email.lastIndexOf('.')-1 &&
+        req.body.password.length > 5 ){
           
         const users = await User.find({});
         users.forEach(user => {
           if(req.body.email === user.email){
-            res.status(500).json({message: "this email is already used"});
+            res.status(200).redirect('/reg').send({message: "this email is already used"});
+            // res.status(500).json({message: "this email is already used"});
           }  
         });
           
@@ -116,6 +130,7 @@ router.post('/', async(req, res) => {
         
       } else{
         res.send("unallowable email or password");
+        res.redirect('/reg');
       }
     } catch (error){
       console.log(error)
@@ -127,11 +142,27 @@ router.post('/', async(req, res) => {
 router.post('/:id', async(req, res) => {
     try {
         const {id} = req.params;
-        const user = await User.findByIdAndUpdate(id, req.body);
+        const user = await User.findById(id);
+        let newuser = user;
+        newuser.name = req.body.name 
+        newuser.email = req.body.email
+        console.log(req.body);
+        if(req.body.password === ''){
+          await User.findByIdAndUpdate(id, newuser);
+          console.log("null password");
+        }
+        if (req.body.oldpas === user.password && req.body.password === req.body.reppas){
+          console.log("change password");
+          newuser.password = req.body.password
+          await User.findByIdAndUpdate(id, newuser);
+        } 
         
         if(!user){
             return res.status(404).json({message: `cannot find any user with ID ${id}`})
         }
+        // if(!newuser){
+        //   return res.status(404).json({message: `uncorrect passwords`})
+        // }
         const updateduser = await User.findById(id);
         // res.status(200).json(updateduser);
         res.status(200).redirect('/users/' + id);
@@ -144,22 +175,43 @@ router.post('/:id', async(req, res) => {
   
   //delete user
 router.post('/del/:id', async(req, res) => {
+  if (currentuser == null){
+    res.redirect('/users/auth');
+  }
+  else{
     try{
-        const {id} = req.params;
-        const user = await User.findByIdAndDelete(id);
-        
-        if(!user){
-            return res.status(404).json({message: `cannot find any user with ID ${id}`})
-        }
-        // res.status(200).json(user);
-        // console.log(user);
-        currentuser = null;
-        res.status(200).redirect('/users/reg');
+      const {id} = req.params;
+      const user = await User.findByIdAndDelete(id);
+      
+      if(!user){
+          return res.status(404).json({message: `cannot find any user with ID ${id}`})
+      }
+      // res.status(200).json(user);
+      // console.log(user);
+      currentuser = null;
+      res.status(200).redirect('/users/reg');
 
     } catch (error){
         console.log(error)
         res.status(500).json({message: error.message})
     }
+  }
   })
+
+  // router.delete('/:id', async(req, res) => {
+  //   try{
+  //       const {id} = req.params;
+  //       const user = await User.findByIdAndDelete(id);
+        
+  //       if(!author){
+  //           return res.status(404).json({message: `cannot find any author with ID ${id}`})
+  //       }
+  //       res.status(200).json(user);
+  //       console.log(user);
+  //   } catch (error){
+  //       console.log(error)
+  //       res.status(500).json({message: error.message})
+  //   }
+  // })
   
 module.exports = router;

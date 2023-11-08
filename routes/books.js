@@ -2,18 +2,51 @@ const express = require('express');
 const router = express.Router();
 const Book = require('..//models/bookModel');
 
+
 /* GET home page. */
 // router.get('/', function(req, res, next) {
 //   res.render('index', { title: 'Express' });
 // });
 
 //get page of adding new book
-router.get('/add/', async(req, res) => {
+router.get('/add', async(req, res) => {
     try{
-        res.status(200).render(`addbook`);
+        if (currentuser){
+            res.status(200).render(`addbook`);
+        }
+        else{
+            res.status(200).redirect('/users/auth');
+        }
     } catch (error){
-        res.status(500).json({message: error.message});
+        // currentuser = null;
+        res.status(500).redirect('/users/auth');
+        res.status(500).render('error', {message: error.message});
     }
+    
+})
+
+//get page of finding
+router.get('/find', async(req, res) => {
+    try{
+        if (currentuser != null){        
+            const books = await Book.find({});
+            let name = req.body.name;
+            let author = req.body.author;
+            let year = req.body.year;
+            if(req.body.books){
+                books = req.body.books;
+            }
+            res.status(200).render(`findbook`, {name: name, author: author, year: year, findedBooks: books});
+        }
+        else{
+            res.status(200).redirect('/users/auth');
+        }    
+    } catch (error){
+        res.status(200).redirect('/users/auth');
+        // res.status(500).json({message: error.message});
+    }
+
+    
 })
 
 //get all books
@@ -34,20 +67,60 @@ router.get('/:id', async(req, res) => {
     try {
         const {id} = req.params;
         const book = await Book.findById(id);
-        console.log(book);
-        res.status(200).render(`book`, {book: book});
+
+        try{
+            if (currentuser != null){
+                res.status(200).render(`editbook`, {book: book, currentuser: currentuser});
+            }        
+        }catch (error){
+            console.log("you are not registered")
+            res.status(200).render(`book`, {book: book});
+        }        
+
     } catch (error) {
         res.status(500).json({message: error.message});
     }
   })
+
+  //get one concrete book find
+  router.post('/find', async(req, res) => {
+    try{
+        const books = await Book.find({});
+        const findedBooks = [];
+        let name = req.body.name;
+        let author = req.body.author;
+        let year = req.body.year;
+        
+        books.forEach(book => {
+            if(!book.name.toLowerCase().indexOf(name.toLowerCase()) &&
+               !book.author.toLowerCase().indexOf(author.toLowerCase())){
+                findedBooks.push(book);     
+            }
+            
+        });
+        console.log(findedBooks);
+        res.status(200).render('findbook', {findedBooks: findedBooks, name: name, author: author, year: year});
+    } catch (error) {
+        // res.status(200).redirect('/users/auth');
+        res.status(500).json({message: error.message});
+    }
+  });
   
   //create new book
 router.post('/', async(req, res) => {
     try{
+        if(req.body.year < 2024 && 
+           req.body.name.length >= 3 && 
+           req.body.author.length >= 3){
         const book = await Book.create(req.body)
         // res.status(200).json(book);
         console.log(book);
         res.status(200).redirect('/books');
+        }
+        else{
+            res.send("unallowable data");
+            res.redirect('/books/add');
+        }
 
     } catch (error){
         console.log(error)
@@ -59,7 +132,13 @@ router.post('/', async(req, res) => {
 router.post('/:id', async(req, res) => {
     try {
         const {id} = req.params;
-        const book = await Book.findByIdAndUpdate(id, req.body);
+        let book = await Book.findById(id);
+
+        if(req.body.year < 2024 && 
+            req.body.name.length >= 3 && 
+            req.body.author.length >= 3){
+            book = await Book.findByIdAndUpdate(id, req.body);
+        }
         
         if(!book){
             return res.status(404).json({message: `cannot find any Book with ID ${id}`})
