@@ -71,6 +71,10 @@ router.get('/:id', async(req, res) => {
         try{
             if (currentuser != null){
                 res.status(200).render(`editbook`, {book: book, currentuser: currentuser});
+            }
+            else{
+                console.log("you are not registered")
+                res.status(200).render(`book`, {book: book});
             }        
         }catch (error){
             console.log("you are not registered")
@@ -118,7 +122,7 @@ router.post('/', async(req, res) => {
         res.status(200).redirect('/books');
         }
         else{
-            res.send("unallowable data");
+            console.log("unallowable data");
             res.redirect('/books/add');
         }
 

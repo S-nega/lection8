@@ -6,6 +6,13 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const Book = require('./models/bookModel')
 const Author = require('./models/authorModel')
+// upload.js
+// const multer  = require('multer')
+//importing mongoose schema file
+// const Upload = require("../models/Upload");
+//setting options for multer
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage: storage });
 
 let currentuser = null;
 
@@ -31,6 +38,7 @@ const app = express();
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
+// app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
 //middleware for json
@@ -69,6 +77,33 @@ app.get('/text/:text', async(req, res) => {
   const {text} = req.params; 
   res.send(text);
 });
+
+// app.post("/upload", upload.single("file"), async (req, res) => {
+//   // req.file can be used to access all file properties
+//   try {
+//     //check if the request has an image or not
+//     if (!req.file) {
+//       res.json({
+//         success: false,
+//         message: "You must provide at least 1 file"
+//       });
+//     } else {
+//       let imageUploadObject = {
+//         file: {
+//           data: req.file.buffer,
+//           contentType: req.file.mimetype
+//         },
+//         fileName: req.body.fileName
+//       };
+//       const uploadObject = new Upload(imageUploadObject);
+//       // saving the object into the database
+//       const uploadProcess = await uploadObject.save();
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Server Error");
+//   }
+// });
 
 app.use('/books', BooksRouter);
 app.use('/authors', AuthorRouter);

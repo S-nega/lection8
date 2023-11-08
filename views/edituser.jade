@@ -12,6 +12,9 @@ block content
         p email: 
         <input type="text" name = "email" value = #{currentuser.email}>
         br
+        p Add Picture
+        <img source = #{currentuser.file}>
+        br
         p Enter your old password: 
         <input type="password" name = "oldpas">
         br
@@ -28,3 +31,7 @@ block content
         
     form(action="/users/del/#{currentuser.id}", method="post")
         button(type="submit" value="delete") Delete
+
+    form(action="/upload" method="post" enctype="multipart/form-data")
+        <input type="file" name="file" value = #{currentuser.file}>
+        button(type="submit") add
