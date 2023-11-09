@@ -4,67 +4,30 @@ const mongoose = require('mongoose')
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const Book = require('./models/bookModel')
-const Author = require('./models/authorModel')
-// upload.js
-// const multer  = require('multer')
-//importing mongoose schema file
-// const Upload = require("../models/Upload");
-//setting options for multer
-// const storage = multer.memoryStorage();
-// const upload = multer({ storage: storage });
 
 let currentuser = null;
 
-// const indexRouter = require('./routes/index');
 const UsersRouter = require('./routes/users', {currentuser: currentuser});
 const BooksRouter = require('./routes/books', {currentuser: currentuser});
 const AuthorRouter = require('./routes/authors');
 
 const app = express();
 
-// app.use(express.json())
-// app.use(express.urlencoded({extended: false}))
+const http = require("http");
+const fs = require("fs");
+const httpServer = http.createServer(app);
 
-//express session middleware
-// app.use(session({
-//     secret: 'yoursecret',
-//     resave: false,
-//     saveUnitialized: true,
-//     cookie: {secure: true} 
-// }));
-// routes
+const PORT = process.env.PORT || 3000;
 
-// view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
-// app.set('view engine', 'ejs');
 
 app.use(logger('dev'));
-//middleware for json
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "./public")));
 app.use(express.static("public"))
-// app.use('/', indexRouter);
-// app.use('/users', usersRouter);
-
-// // catch 404 and forward to error handler
-// app.use(function(req, res, next) {
-//   next(createError(404));
-// });
-
-// // error handler
-// app.use(function(err, req, res, next) {
-//   // set locals, only providing error in development
-//   res.locals.message = err.message;
-//   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-//   // render the error page
-//   res.status(err.status || 500);
-//   res.render('error');
-// });
 
 
 //lect 8.1.1
@@ -78,53 +41,70 @@ app.get('/text/:text', async(req, res) => {
   res.send(text);
 });
 
-// app.post("/upload", upload.single("file"), async (req, res) => {
-//   // req.file can be used to access all file properties
-//   try {
-//     //check if the request has an image or not
-//     if (!req.file) {
-//       res.json({
-//         success: false,
-//         message: "You must provide at least 1 file"
-//       });
-//     } else {
-//       let imageUploadObject = {
-//         file: {
-//           data: req.file.buffer,
-//           contentType: req.file.mimetype
-//         },
-//         fileName: req.body.fileName
-//       };
-//       const uploadObject = new Upload(imageUploadObject);
-//       // saving the object into the database
-//       const uploadProcess = await uploadObject.save();
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).send("Server Error");
-//   }
-// });
 
+app.set({currentuser: currentuser});
 app.use('/books', BooksRouter);
 app.use('/authors', AuthorRouter);
 app.use('/users', UsersRouter);
-
-app.set({currentuser: currentuser});
-
-//get one book
 
 
 
 mongoose.
 connect('mongodb+srv://admin:admin@booksdb.9ym73nv.mongodb.net/?retryWrites=true&w=majority')
 .then(() => {
-// app.listen(3000, ()=> {
-//     console.log(`Node API app is running on port 3000`)
-// });    
 console.log('connected to MongoDB')
   }).catch((error) => {
     console.log(error)
 })
+
+
+const multer = require("multer");
+
+const handleError = (err, res) => {
+  res
+    .status(500)
+    .contentType("text/plain")
+    .end("Oops! Something went wrong!" + err.message);
+};
+
+const upload = multer({
+  dest: "/public/images/"
+});
+
+app.get("/image.png", (req, res) => {
+  res.sendFile(path.join(__dirname, "./public/images/image.png"));
+});
+
+app.post(
+  "/upload/:id",
+  upload.single("file" /* name attribute of <file> element in your form */),
+  async(req, res) => {
+    const tempPath = req.file.path;
+    const {id} = req.params; 
+    const targetPath = path.join(__dirname, "./public/images/image.png");
+
+    if (path.extname(req.file.originalname).toLowerCase() === ".png") {
+      fs.rename(tempPath, targetPath, err => {
+        if (err) return handleError(err, res);
+
+        res
+          .status(200)
+          .contentType("text/plain")
+          .redirect("/users/" + id)
+      });
+    } else {
+      fs.unlink(tempPath, err => {
+        if (err) return handleError(err, res);
+
+        res
+          .status(403)
+          .contentType("text/plain")
+          .end("Only .png files are allowed!");
+      });
+    }
+  }
+);
+
 
 module.exports = app;
 

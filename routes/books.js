@@ -3,11 +3,6 @@ const router = express.Router();
 const Book = require('..//models/bookModel');
 
 
-/* GET home page. */
-// router.get('/', function(req, res, next) {
-//   res.render('index', { title: 'Express' });
-// });
-
 //get page of adding new book
 router.get('/add', async(req, res) => {
     try{
@@ -18,7 +13,6 @@ router.get('/add', async(req, res) => {
             res.status(200).redirect('/users/auth');
         }
     } catch (error){
-        // currentuser = null;
         res.status(500).redirect('/users/auth');
         res.status(500).render('error', {message: error.message});
     }
@@ -43,7 +37,6 @@ router.get('/find', async(req, res) => {
         }    
     } catch (error){
         res.status(200).redirect('/users/auth');
-        // res.status(500).json({message: error.message});
     }
 
     
@@ -53,7 +46,6 @@ router.get('/find', async(req, res) => {
 router.get('/', async(req, res) => {
     try{
         const books = await Book.find({});
-        // const viewBooks = JSON.stringify(books);
         console.log(books);
         res.status(200).render(`books`, {books: books});
 
@@ -105,7 +97,6 @@ router.get('/:id', async(req, res) => {
         console.log(findedBooks);
         res.status(200).render('findbook', {findedBooks: findedBooks, name: name, author: author, year: year});
     } catch (error) {
-        // res.status(200).redirect('/users/auth');
         res.status(500).json({message: error.message});
     }
   });
@@ -117,7 +108,6 @@ router.post('/', async(req, res) => {
            req.body.name.length >= 3 && 
            req.body.author.length >= 3){
         const book = await Book.create(req.body)
-        // res.status(200).json(book);
         console.log(book);
         res.status(200).redirect('/books');
         }
@@ -148,7 +138,6 @@ router.post('/:id', async(req, res) => {
             return res.status(404).json({message: `cannot find any Book with ID ${id}`})
         }
         const updatedBook = await Book.findById(id);
-        // res.status(200).json(updatedBook);
         res.status(200).redirect('/books/' + id);
         console.log(updatedBook);
   
@@ -166,12 +155,9 @@ router.post('/del/:id', async(req, res) => {
         if(!book){
             return res.status(404).json({message: `cannot find any Book with ID ${id}`})
         }
-        // res.status(200).json(book);
-        // console.log(book);
         res.status(200).redirect('/books');
 
     } catch (error){
-        // console.log(error)
         res.status(500).json({message: error.message});
     }
   })
