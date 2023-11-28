@@ -5,6 +5,42 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
+const swaggerJSDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Express API for JSONPlaceholder',
+    version: '1.0.0',
+    description:
+      'This is a REST API application made with Express. It retrieves data from JSONPlaceholder. It use data from mongodb and realise functions for books authors and authentication',
+    license: {
+      name: 'Licensed Under MIT',
+      url: 'https://spdx.org/licenses/MIT.html',
+    },
+    contact: {
+      name: 'JSONPlaceholder',
+      url: 'https://jsonplaceholder.typicode.com',
+    },
+  },
+  servers: [
+    {
+      url: 'http://localhost:3000',
+      description: 'Development server',
+    },
+  ],
+};
+
+const options = {
+  swaggerDefinition,
+  // Paths to files containing OpenAPI definitions
+  apis: ['./routes/*.js'],
+};
+
+const swaggerSpec = swaggerJSDoc(options);
+// const swaggerSpec = require('./swagger');
+
 let currentuser = null;
 
 const UsersRouter = require('./routes/users', {currentuser: currentuser});
@@ -28,13 +64,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "./public")));
 app.use(express.static("public"))
+// app.use('/docs', swaggerSpec)
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 //lect 8.1.1
 app.get('/hello', (req, res) => {
   res.send('Hello Express!');
 });
-
 //lect 8.1.2
 app.get('/text/:text', async(req, res) => {
   const {text} = req.params; 
@@ -43,9 +80,9 @@ app.get('/text/:text', async(req, res) => {
 
 
 app.set({currentuser: currentuser});
-app.use('/books', BooksRouter);
-app.use('/authors', AuthorRouter);
-app.use('/users', UsersRouter);
+app.use('/api/books', BooksRouter);
+app.use('/api/authors', AuthorRouter);
+app.use('/api/users', UsersRouter);
 
 
 
