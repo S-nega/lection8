@@ -8,6 +8,48 @@ const logger = require('morgan');
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 
+const app = express();
+
+const options = {
+  definition: {
+    openapi: "3.1.0",
+    info: {
+      title: "LogRocket Express API with Swagger",
+      version: "0.1.0",
+      description:
+        "This is a simple CRUD API application made with Express and documented with Swagger",
+      license: {
+        name: "MIT",
+        url: "https://spdx.org/licenses/MIT.html",
+      },
+      contact: {
+        name: "LogRocket",
+        url: "https://logrocket.com",
+        email: "info@email.com",
+      },
+    },
+    servers: [
+      {
+        url: "http://localhost:3000",
+      },
+    ],
+  },
+  apis: ["./routes/authors.js"],
+};
+
+
+const swaggerSpec = swaggerJSDoc(options);
+// const swaggerSpec = require('./swagger');
+
+
+// const specs = swaggerJsdoc(options);
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, { explorer: true })
+);
+// app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
@@ -30,16 +72,14 @@ const swaggerDefinition = {
       description: 'Development server',
     },
   ],
+  apis: [`lection8/routes/swagger.js`],
 };
 
-const options = {
-  swaggerDefinition,
-  // Paths to files containing OpenAPI definitions
-  apis: ['./routes/*.js'],
-};
-
-const swaggerSpec = swaggerJSDoc(options);
-// const swaggerSpec = require('./swagger');
+// const options = {
+//   swaggerDefinition,
+//   // Paths to files containing OpenAPI definitions
+//   apis: [`lection8/routes/authors.js`],
+// };
 
 let currentuser = null;
 
@@ -47,7 +87,6 @@ const UsersRouter = require('./routes/users', {currentuser: currentuser});
 const BooksRouter = require('./routes/books', {currentuser: currentuser});
 const AuthorRouter = require('./routes/authors');
 
-const app = express();
 
 const http = require("http");
 const fs = require("fs");
@@ -65,7 +104,6 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "./public")));
 app.use(express.static("public"))
 // app.use('/docs', swaggerSpec)
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 //lect 8.1.1
