@@ -2,7 +2,7 @@ extends layout
 
 block content
 
-    a(href="/books") back to lists
+    a(href="/api/books") back to lists
     
     form(action="#{book.id}", method="post") 
         p book name: 
@@ -17,5 +17,5 @@ block content
         br
         button(type="submit" value="save") Save  
 
-    form(action="/books/del/#{book.id}", method="post")
+    form(action="/api/books/del/#{book.id}", method="post")
         button(type="submit" value="delete") Delete

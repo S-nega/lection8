@@ -1,7 +1,7 @@
 extends layout
 
 block content
-    form(action="/users/auth/", method="post") 
+    form(action="/api/users/auth/", method="post") 
         p Enter your email: 
         <input type="email" name = "email">
         br
@@ -13,6 +13,6 @@ block content
         br
         br
         
-    <a href="/users/reg"> Don't have an account? </a>
+    <a href="/api/users/reg"> Don't have an account? </a>
     br
-    <a href="/users"> Continue without authorithation </a>
+    <a href="/api/users"> Continue without authorithation </a>

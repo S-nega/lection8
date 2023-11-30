@@ -1,7 +1,7 @@
 extends layout
 
 block content
-    form(action="/users/", method="post") 
+    form(action="/api/users/", method="post") 
         p Enter your name: 
         <input type="text" name = "name">
         br
@@ -19,6 +19,6 @@ block content
         br 
         br
         
-    <a href="/users/auth/"> Have an account? </a>
+    <a href="/api/users/auth/"> Have an account? </a>
     br
-    <a href="/users"> Continue without registration </a>
+    <a href="/api/users"> Continue without registration </a>

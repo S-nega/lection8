@@ -7,6 +7,8 @@ const logger = require('morgan');
 
 const swaggerJSDoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const { forkJoin, of } = require('rxjs');
+const { catchError, map } = require('rxjs/operators');
 
 const app = express();
 
@@ -37,49 +39,13 @@ const options = {
   apis: ["./routes/authors.js"],
 };
 
-
 const swaggerSpec = swaggerJSDoc(options);
-// const swaggerSpec = require('./swagger');
 
-
-// const specs = swaggerJsdoc(options);
 app.use(
   "/api-docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, { explorer: true })
 );
-// app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-const swaggerDefinition = {
-  openapi: '3.0.0',
-  info: {
-    title: 'Express API for JSONPlaceholder',
-    version: '1.0.0',
-    description:
-      'This is a REST API application made with Express. It retrieves data from JSONPlaceholder. It use data from mongodb and realise functions for books authors and authentication',
-    license: {
-      name: 'Licensed Under MIT',
-      url: 'https://spdx.org/licenses/MIT.html',
-    },
-    contact: {
-      name: 'JSONPlaceholder',
-      url: 'https://jsonplaceholder.typicode.com',
-    },
-  },
-  servers: [
-    {
-      url: 'http://localhost:3000',
-      description: 'Development server',
-    },
-  ],
-  apis: [`lection8/routes/swagger.js`],
-};
-
-// const options = {
-//   swaggerDefinition,
-//   // Paths to files containing OpenAPI definitions
-//   apis: [`lection8/routes/authors.js`],
-// };
 
 let currentuser = null;
 
@@ -103,8 +69,6 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "./public")));
 app.use(express.static("public"))
-// app.use('/docs', swaggerSpec)
-
 
 //lect 8.1.1
 app.get('/hello', (req, res) => {
@@ -123,6 +87,28 @@ app.use('/api/authors', AuthorRouter);
 app.use('/api/users', UsersRouter);
 
 
+// Симулируем два асинхронных запроса
+const fetchData1 = () => of('Результат запроса 1');
+const fetchData2 = () => of('Результат запроса 2');
+
+// Объединяем результаты запросов с использованием forkJoin
+forkJoin({
+  data1: fetchData1(),
+  data2: fetchData2()
+})
+.pipe(
+  map(results => {
+    // Обрабатываем результаты
+    console.log('Результат запроса 1:', results.data1);
+    console.log('Результат запроса 2:', results.data2);
+  }),
+  catchError(error => {
+    console.error('Произошла ошибка:', error);
+    // Обработка ошибки объединения результатов запросов
+    return of('Заменяющие данные');
+  })
+)
+.subscribe();
 
 mongoose.
 connect('mongodb+srv://admin:admin@booksdb.9ym73nv.mongodb.net/?retryWrites=true&w=majority')

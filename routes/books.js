@@ -2,6 +2,31 @@ const express = require('express');
 const router = express.Router();
 const Book = require('..//models/bookModel');
 
+const { from, of } = require('rxjs');
+const { catchError, map } = require('rxjs/operators');
+
+// Симулируем асинхронный запрос, который может завершиться с ошибкой
+const fetchData = () => {
+  return new Promise((resolve, reject) => {
+    // reject('Ошибка при получении данных');    
+    resolve('Данные успешно получены');
+  });
+};
+
+// Создаем наблюдаемую последовательность из асинхронного запроса
+const observable = from(fetchData());
+
+// Обрабатываем ошибку с использованием catchError
+observable.pipe(
+  catchError(error => {
+    console.error('Произошла ошибка:', error);
+    return of('Заменяющие данные');
+  })
+)
+.subscribe(data => {
+  console.log('Полученные данные:', data);
+});
+
 
 //get page of adding new book
 router.get('/add', async(req, res) => {
@@ -10,13 +35,12 @@ router.get('/add', async(req, res) => {
             res.status(200).render(`addbook`);
         }
         else{
-            res.status(200).redirect('/users/auth');
+            res.status(200).redirect('/api/users/auth');
         }
     } catch (error){
-        res.status(500).redirect('/users/auth');
+        res.status(500).redirect('/api/users/auth');
         res.status(500).render('error', {message: error.message});
     }
-    
 })
 
 //get page of finding
@@ -33,13 +57,11 @@ router.get('/find', async(req, res) => {
             res.status(200).render(`findbook`, {name: name, author: author, year: year, findedBooks: books});
         }
         else{
-            res.status(200).redirect('/users/auth');
+            res.status(200).redirect('/api/users/auth');
         }    
     } catch (error){
-        res.status(200).redirect('/users/auth');
+        res.status(200).redirect('/api/users/auth');
     }
-
-    
 })
 
 //get all books
@@ -59,7 +81,6 @@ router.get('/:id', async(req, res) => {
     try {
         const {id} = req.params;
         const book = await Book.findById(id);
-
         try{
             if (currentuser != null){
                 res.status(200).render(`editbook`, {book: book, currentuser: currentuser});
@@ -72,7 +93,6 @@ router.get('/:id', async(req, res) => {
             console.log("you are not registered")
             res.status(200).render(`book`, {book: book});
         }        
-
     } catch (error) {
         res.status(500).json({message: error.message});
     }
@@ -92,7 +112,6 @@ router.get('/:id', async(req, res) => {
                !book.author.toLowerCase().indexOf(author.toLowerCase())){
                 findedBooks.push(book);     
             }
-            
         });
         console.log(findedBooks);
         res.status(200).render('findbook', {findedBooks: findedBooks, name: name, author: author, year: year});
@@ -109,13 +128,12 @@ router.post('/', async(req, res) => {
            req.body.author.length >= 3){
         const book = await Book.create(req.body)
         console.log(book);
-        res.status(200).redirect('/books');
+        res.status(200).redirect('/api/books');
         }
         else{
             console.log("unallowable data");
-            res.redirect('/books/add');
+            res.redirect('/api/books/add');
         }
-
     } catch (error){
         console.log(error)
         res.status(500).json({message: error.message});
@@ -138,7 +156,7 @@ router.post('/:id', async(req, res) => {
             return res.status(404).json({message: `cannot find any Book with ID ${id}`})
         }
         const updatedBook = await Book.findById(id);
-        res.status(200).redirect('/books/' + id);
+        res.status(200).redirect('/api/books/' + id);
         console.log(updatedBook);
   
     } catch (error) {
@@ -155,7 +173,7 @@ router.post('/del/:id', async(req, res) => {
         if(!book){
             return res.status(404).json({message: `cannot find any Book with ID ${id}`})
         }
-        res.status(200).redirect('/books');
+        res.status(200).redirect('/api/books');
 
     } catch (error){
         res.status(500).json({message: error.message});

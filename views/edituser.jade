@@ -2,7 +2,7 @@ extends layout
 
 block content
 
-    a(href="/users") back to lists
+    a(href="/api/users") back to lists
 
     p Hello #{currentuser.name} !
     form(action="#{currentuser.id}", method="post") 
@@ -26,7 +26,7 @@ block content
         br
         br
         
-    form(action="/users/del/#{currentuser.id}", method="post")
+    form(action="/api/users/del/#{currentuser.id}", method="post")
         button(type="submit" value="delete") Delete
 
     br

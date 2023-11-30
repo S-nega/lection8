@@ -40,15 +40,15 @@ router.post('/auth', async(req, res) => {
       try{
         const curid = currentuser.id;
         if(currentuser.password === req.body.password){
-          res.status(200).redirect('/users/' + curid);// get one user
+          res.status(200).redirect('/api/users/' + curid);// get one user
         }
         else{
           console.log("uncorrect password");
-          res.status(500).redirect('/users/auth');
+          res.status(500).redirect('/api/users/auth');
         }
       }catch (error){
         console.log("uncorrect email");
-        res.status(200).redirect('/users/auth');
+        res.status(200).redirect('/api/users/auth');
       }
       
       
@@ -95,7 +95,7 @@ router.get('/:id', async(req, res) => {
           }
         } catch(error){
           currentuser = null;
-          res.status(500).redirect('/users/' + id);
+          res.status(500).redirect('/api/users/' + id);
         }
         
 
@@ -117,18 +117,18 @@ router.post('/', async(req, res) => {
         users.forEach(user => {
           if(req.body.email == user.email){
             console.log("this email is already used");
-            res.redirect('/users/reg').end();
+            res.redirect('/api/users/reg').end();
           }  
         });
 
         console.log("test");
         const user = await User.create(req.body);
         currentuser = user;
-        res.status(200).redirect('/users/' + user.id);// get one user
+        res.status(200).redirect('/api/users/' + user.id);// get one user
         
       } else{
         console.log("unallowable email or password")
-        res.redirect('/users/reg');
+        res.redirect('/api/users/reg');
       }
     } catch (error){
       console.log(error)
@@ -164,7 +164,7 @@ router.post('/:id', async(req, res) => {
             return res.status(404).json({message: `cannot find any user with ID ${id}`})
         }
         const updateduser = await User.findById(id);
-        res.status(200).redirect('/users/' + id);
+        res.status(200).redirect('/api/users/' + id);
         console.log(updateduser);
   
     } catch (error) {
@@ -175,7 +175,7 @@ router.post('/:id', async(req, res) => {
   //delete user
 router.post('/del/:id', async(req, res) => {
   if (currentuser == null){
-    res.redirect('/users/auth');
+    res.redirect('/api/users/auth');
   }
   else{
     try{
@@ -186,7 +186,7 @@ router.post('/del/:id', async(req, res) => {
           return res.status(404).json({message: `cannot find any user with ID ${id}`})
       }
       currentuser = null;
-      res.status(200).redirect('/users/reg');
+      res.status(200).redirect('/api/users/reg');
 
     } catch (error){
         console.log(error)

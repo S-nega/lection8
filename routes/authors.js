@@ -17,10 +17,18 @@
  *         surname:
  *           type: string
  *           description: Surname of the author
+ *         createdAt: 
+ *           type: string 
+ *           description: Time when author was added
+ *         updatedAt: 
+ *           type: string 
+ *           description: Time when author was updated
  *       example:
  *         id: d5fE_asz
  *         name: Alexander
  *         surname: Dewdney
+ *         createdAt: 2023-11-09T07:24:08.759Z
+ *         updatedAt: 2023-11-09T07:24:08.759Z
  */
 /**
  * @swagger
@@ -31,6 +39,7 @@
  *       required:
  *         - title
  *         - author
+ *         - year
  *       properties:
  *         id:
  *           type: string
@@ -41,10 +50,14 @@
  *         author:
  *           type: string
  *           description: The book's author
+ *         year:
+ *           type: number
+ *           description: The year when book was writed
  *       example:
  *         id: d5fE_asz
  *         title: The New Turing Omnibus
  *         author: Alexander K. Dewdney
+ *         year: 2008
  */
 
 /**
